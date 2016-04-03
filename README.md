@@ -8,7 +8,7 @@ Best place to see it in function is in unit tests right now.
 
 #### The MIT License
 
-Copyright (c) 2010-2016 Google, Inc. http://angularjs.org
+Copyright (c) 2016 S-Innovations v/Poul Kjeldager Sørensen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
