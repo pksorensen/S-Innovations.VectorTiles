@@ -6,13 +6,14 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("S-Innovations.VectorTiles.GeoJsonVT")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("GeoJson-VT for .NET, making it easy to slice up some geojson to tiles")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("S-Innovations v/Poul Kjeldager Sørensen")]
 [assembly: AssemblyProduct("S-Innovations.VectorTiles.GeoJsonVT")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly:AssemblyInformationalVersion("1.0.0")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
