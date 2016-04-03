@@ -1,6 +1,8 @@
 # GeoJsonVT.NET — GeoJSON Vector Tiles for .NET
 ============================================
 
+![](https://sinnovations.visualstudio.com/DefaultCollection/_apis/public/build/definitions/40c16cc5-bf99-47d4-a814-56c38cc0ea24/9/badge)
+
 This library is a port of [geojson-vt](https://github.com/mapbox/geojson-vt) or the very first commit of such. All functionality and most of the tests are ported.
 
 Best place to see it in function is in unit tests right now.
