@@ -1,6 +1,6 @@
 ﻿namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries
 {
-    public class GeoJsonMultipoint : GeoJsonGeometry
+    public class MultiPoint : GeometryObject
     {
 
         public override string Type { get; } = GeoJsonMultiPointType;

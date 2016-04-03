@@ -13,13 +13,13 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
 
     public static class GenTiles
     {
-        public static Dictionary<string, List<GeoJsonVTFeature>> GenerateTiles(GeoJsonObject data,int maxZoom=14, int maxPoints=100000)
+        public static Dictionary<string, List<VectorTileFeature>> GenerateTiles(GeoJsonObject data,int maxZoom=14, int maxPoints=100000)
         {
-            var index = new GeoJsonVT();
+            var index = new GeoJsonVectorTiles();
             index.Options.IndexMaxZoom = maxZoom;
             index.Options.IndexMaxPoints = maxPoints;
             index.ProcessData(data);
-            var output = new Dictionary<string, List<GeoJsonVTFeature>>();
+            var output = new Dictionary<string, List<VectorTileFeature>>();
             foreach(var id in index.Tiles.Keys)
             {
                 var tile = index.Tiles[id];
@@ -68,14 +68,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
            
 
             var data = Parse(Load("testjson.geojson"));
-            var index = new GeoJsonVT();
+            var index = new GeoJsonVectorTiles();
             index.Options.SolidChildren = true;
           //  index.Options.MaxZoom = maxZoom;
           //  index.Options.IndexMaxPoints = maxPoints;
             index.ProcessData(data);
-            var path = new List<GeoJsonVTTileCoord>();
-            var queue = new Queue<GeoJsonVTTileCoord>();
-            queue.Enqueue(new GeoJsonVTTileCoord());
+            var path = new List<VectorTileCoord>();
+            var queue = new Queue<VectorTileCoord>();
+            queue.Enqueue(new VectorTileCoord());
             while(queue.Count > 0)
             {
                 var coord = queue.Dequeue();
@@ -99,7 +99,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
         {
 
             var data = Parse(Load("us-states.json"));
-            var index = new GeoJsonVT();
+            var index = new GeoJsonVectorTiles();
             index.Options.IndexMaxZoom = 7;
             index.Options.IndexMaxPoints = 7;
             index.ProcessData(data);

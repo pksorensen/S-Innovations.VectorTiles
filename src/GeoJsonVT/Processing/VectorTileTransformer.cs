@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SInnovations.VectorTiles.GeoJsonVT.Models;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 {
-    public class GeoJsonVTTransformer
+    public class VectorTileTransformer
     {
         public double[] TransformPoint(double[] p, double extent, int z2, int tx, int ty)
         {
@@ -20,7 +21,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             return new[] { x, y };
         }
 
-        public GeoJsonVTTile TransformTile(GeoJsonVTTile tile, double extent)
+        public VectorTile TransformTile(VectorTile tile, double extent)
         {
             if (tile.Transformed) return tile;
 

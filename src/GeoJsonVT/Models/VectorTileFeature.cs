@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace SInnovations.VectorTiles.GeoJsonVT
+namespace SInnovations.VectorTiles.GeoJsonVT.Models
 {
 
     public class GeoJsonVTFeatureConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
-            return typeof(GeoJsonVTFeature) == objectType;
+            return typeof(VectorTileFeature) == objectType;
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -22,7 +22,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var feature = value as GeoJsonVTFeature;
+            var feature = value as VectorTileFeature;
             writer.WriteStartObject();
             writer.WritePropertyName("geometry");
             if(feature.Type == 1)
@@ -38,9 +38,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         }
     }
     [JsonConverter(typeof(GeoJsonVTFeatureConverter))]
-    public class GeoJsonVTFeature
+    public class VectorTileFeature
     {
-        public GeoJsonVTPointCollection[] Geometry { get; set; }
+        public VectorTileGeometry[] Geometry { get; set; }
         public int Type { get; set; }
         public Dictionary<string, object> Tags { get; set; }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 {
-    public class GeoJsonVTSimplifier
+    public class VectorTileSimplifier
     {
         public void simplify(List<double[]> points, double tolerance)
         {

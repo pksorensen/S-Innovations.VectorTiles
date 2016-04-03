@@ -1,6 +1,6 @@
 ﻿namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries
 {
-    public class GeoJsonPolygon : MultiLinetringOrPolygon
+    public class Polygon : MultiLineStringPolygonGeometry
     {
         public override string Type { get; } = GeoJsonPolygonType;
 

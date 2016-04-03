@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SInnovations.VectorTiles.GeoJsonVT
 {
-    public class GeoJsonVTPointCollection : List<double[]>
+    public class VectorTileGeometry : List<double[]>
     {
         public double Area { get; set; }
         public double Distance { get; set; }

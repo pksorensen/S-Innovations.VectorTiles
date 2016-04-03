@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SInnovations.VectorTiles.GeoJsonVT.Models;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 {
@@ -12,18 +13,18 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
      * /   |   \____|____/
      *     |        |
      */
-    public class GeoJsonVTClipper
+    public class VectorTileClipper
     {
 
-        public List<GeoJsonVTFeature> Clip(List<GeoJsonVTFeature> features, double scale, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, double minAll, double maxAll)
+        public List<VectorTileFeature> Clip(List<VectorTileFeature> features, double scale, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, double minAll, double maxAll)
         {
             k1 /= scale;
             k2 /= scale;
 
             if (minAll >= k1 && maxAll <= k2) return features; // trivial accept
-            else if (minAll > k2 || maxAll < k1) return new List<GeoJsonVTFeature>(); // trivial reject
+            else if (minAll > k2 || maxAll < k1) return new List<VectorTileFeature>(); // trivial reject
 
-            var clipped = new List<GeoJsonVTFeature>();
+            var clipped = new List<VectorTileFeature>();
 
             for (var i = 0; i < features.Count; i++)
             {
@@ -50,7 +51,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
                 {
                     // if a feature got clipped, it will likely get clipped on the next zoom level as well,
                     // so there's no need to recalculate bboxes
-                    clipped.Add( new GeoJsonVTFeature {
+                    clipped.Add( new VectorTileFeature {
                         Geometry=  slices ,
                         Type= type,
                         Tags= features[i].Tags,
@@ -64,9 +65,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
         }
 
-        private GeoJsonVTPointCollection[] clipGeometry(GeoJsonVTPointCollection[] geometry, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, bool closed)
+        private VectorTileGeometry[] clipGeometry(VectorTileGeometry[] geometry, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, bool closed)
         {
-            var slices = new List<GeoJsonVTPointCollection>();
+            var slices = new List<VectorTileGeometry>();
 
             for (var i = 0; i < geometry.Length; i++)
             {
@@ -82,7 +83,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
               //  var j;
               //  var last;
 
-                var slice = new GeoJsonVTPointCollection();
+                var slice = new VectorTileGeometry();
 
                 for (var j = 0; j < len - 1; j++)
                 {
@@ -157,7 +158,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             return slices.ToArray();
         }
 
-        private GeoJsonVTPointCollection NewSlice(List<GeoJsonVTPointCollection> slices, GeoJsonVTPointCollection slice, double area, double dist)
+        private VectorTileGeometry NewSlice(List<VectorTileGeometry> slices, VectorTileGeometry slice, double area, double dist)
         {
             if (slice.Any())
             {
@@ -168,14 +169,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
                 slices.Add(slice);
             }
-            return new GeoJsonVTPointCollection();
+            return new VectorTileGeometry();
         }
 
        
 
-        private GeoJsonVTPointCollection[] clipPoints(GeoJsonVTPointCollection geometry, double k1, double k2, int axis)
+        private VectorTileGeometry[] clipPoints(VectorTileGeometry geometry, double k1, double k2, int axis)
         {
-            var slice = new GeoJsonVTPointCollection();
+            var slice = new VectorTileGeometry();
 
             for (var i = 0; i < geometry.Count; i++)
             {

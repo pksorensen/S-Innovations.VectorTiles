@@ -1,6 +1,6 @@
 ﻿namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries
 {
-    public abstract class GeoJsonGeometry : GeoJsonObject
+    public abstract class GeometryObject : GeoJsonObject
     {
       
       

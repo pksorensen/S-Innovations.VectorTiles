@@ -1,9 +1,9 @@
 ﻿namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries
 {
-    public class GeometryCollection : GeoJsonGeometry
+    public class GeometryCollection : GeometryObject
     {
         public override string Type { get; } = GeoJsonGeometryCollectionType;
 
-        public GeoJsonGeometry[] Geometries { get; set; }
+        public GeometryObject[] Geometries { get; set; }
     }
 }

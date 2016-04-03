@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SInnovations.VectorTiles.GeoJsonVT.Models;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 {
-    public class GeoJsonVTWrapper
+    public class VectorTileWrapper
     {
-        protected GeoJsonVTClipper Clipper { get; set; }
-        public GeoJsonVTWrapper(GeoJsonVTClipper clipper = null)
+        protected VectorTileClipper Clipper { get; set; }
+        public VectorTileWrapper(VectorTileClipper clipper = null)
         {
-            Clipper = clipper ?? new GeoJsonVTClipper();
+            Clipper = clipper ?? new VectorTileClipper();
         }
-        public List<GeoJsonVTFeature> Wrap(List<GeoJsonVTFeature> features, double buffer, Func<double[], double[], double, double[]> intersectX)
+        public List<VectorTileFeature> Wrap(List<VectorTileFeature> features, double buffer, Func<double[], double[], double, double[]> intersectX)
         {
             var merged = features;
             var left =  Clipper.Clip(features,  1, -1 - buffer, buffer,      0, intersectX, -1, 2);//Left world copy;
@@ -33,9 +32,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
         }
 
-        private List<GeoJsonVTFeature> ShiftFeatureCoords(List<GeoJsonVTFeature> features, double offset)
+        private List<VectorTileFeature> ShiftFeatureCoords(List<VectorTileFeature> features, double offset)
         {
-            var newFeatures = new List<GeoJsonVTFeature>();
+            var newFeatures = new List<VectorTileFeature>();
 
             for (var i = 0; i < features.Count; i++)
             {
@@ -43,14 +42,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
                 var type = feature.Type;
 
 
-                var newGeometry = new List<GeoJsonVTPointCollection>();
+                var newGeometry = new List<VectorTileGeometry>();
                 for (var j = 0; j < feature.Geometry.Length; j++)
                 {
                     newGeometry.Add(ShiftCoords(feature.Geometry[j], offset));
                 }
 
 
-                newFeatures.Add(new GeoJsonVTFeature
+                newFeatures.Add(new VectorTileFeature
                 {
                     Geometry = newGeometry.ToArray(),
                     Type = type,
@@ -63,9 +62,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             return newFeatures;
         }
 
-        private GeoJsonVTPointCollection ShiftCoords(GeoJsonVTPointCollection points, double offset)
+        private VectorTileGeometry ShiftCoords(VectorTileGeometry points, double offset)
         {
-            var newPoints = new GeoJsonVTPointCollection();
+            var newPoints = new VectorTileGeometry();
             newPoints.Area = points.Area;
             newPoints.Distance = points.Distance;
 

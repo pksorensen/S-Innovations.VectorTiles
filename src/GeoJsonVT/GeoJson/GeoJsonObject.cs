@@ -5,7 +5,7 @@ using SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson
 {
-
+    [JsonConverter(typeof(GeoJsonObjectConverter))]
     public abstract class GeoJsonObject
     {
         public const string FeatureCollectionType = "FeatureCollection";
@@ -26,38 +26,50 @@ namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson
     {
         public override bool CanConvert(Type objectType)
         {
-            return typeof(GeoJsonObject)== objectType || typeof(GeoJsonGeometry) == objectType;
+            return typeof(GeoJsonObject)== objectType || typeof(GeometryObject) == objectType;
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JObject jObject = JObject.Load(reader);
             var type = jObject.SelectToken("type").ToString();
-            
+            GeoJsonObject value = null;
             switch (type)
             {
                 case GeoJsonObject.FeatureCollectionType:
-                   return jObject.ToObject<GeoJsonFeatureCollection>(serializer);
+                    value = new GeoJsonFeatureCollection();break;
+                 //  return jObject.ToObject<GeoJsonFeatureCollection>(serializer);
                 case GeoJsonObject.FeatureType:
-                    return jObject.ToObject<GeoJsonFeature>(serializer);
-                case GeoJsonObject.GeoJsonGeometryCollectionType:                   
-                    return jObject.ToObject<GeometryCollection>(serializer);
+                    value = new GeoJsonFeature();break;
+                   // return jObject.ToObject<GeoJsonFeature>(serializer);
+                case GeoJsonObject.GeoJsonGeometryCollectionType:
+                    value = new GeometryCollection();break;
+                    //  return jObject.ToObject<GeometryCollection>(serializer);
                 case GeoJsonObject.GeoJsonLineStringType:
-                    return jObject.ToObject<GeoJsonLineString>(serializer);
+                    value = new LineString(); break;
+                // return jObject.ToObject<GeoJsonLineString>(serializer);
                 case GeoJsonObject.GeoJsonMultiLineStringType:
-                    return jObject.ToObject <GeoJsonMultiLineString>(serializer);
+                    value = new MultiLineString(); break;
+                // return jObject.ToObject <GeoJsonMultiLineString>(serializer);
                 case GeoJsonObject.GeoJsonMultiPointType:
-                    return jObject.ToObject<GeoJsonMultipoint>(serializer);
+                    value = new MultiPoint(); break;
+                //  return jObject.ToObject<GeoJsonMultipoint>(serializer);
                 case GeoJsonObject.GeoJsonMultiPolygonType:
-                    return jObject.ToObject<GeoJsonMultiPolygon>(serializer);
+                    value = new MultiPolygon(); break;
+                //  return jObject.ToObject<GeoJsonMultiPolygon>(serializer);
                 case GeoJsonObject.GeoJsonPointType:
-                    return jObject.ToObject<GeoJsonPoint>(serializer);
+                    value = new Point(); break;
+                //  return jObject.ToObject<GeoJsonPoint>(serializer);
                 case GeoJsonObject.GeoJsonPolygonType:
-                    return jObject.ToObject<GeoJsonPolygon>(serializer);
-
+                    value = new Polygon(); break;
+                //  return jObject.ToObject<GeoJsonPolygon>(serializer);
+                default:
+                    throw new Exception("Unkown type");
             }
 
-            throw new Exception("Unkown type");
+            serializer.Populate(jObject.CreateReader(), value);
+            return value;
+           
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

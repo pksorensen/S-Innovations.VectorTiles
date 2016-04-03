@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
 using SInnovations.VectorTiles.GeoJsonVT.GeoJson.Geometries;
+using SInnovations.VectorTiles.GeoJsonVT.Models;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 {
-    public class GeoJsonVTConverter
+    public class VectorTileConverter
     {
-        protected GeoJsonVTSimplifier Simplifier { get; private set; }
-        public GeoJsonVTConverter(GeoJsonVTSimplifier simplifier = null)
+        protected VectorTileSimplifier Simplifier { get; private set; }
+        public VectorTileConverter(VectorTileSimplifier simplifier = null)
         {
-            Simplifier = simplifier ?? new GeoJsonVTSimplifier();
+            Simplifier = simplifier ?? new VectorTileSimplifier();
         }
-        public List<GeoJsonVTFeature> Convert(GeoJsonObject data, double tolerance)
+        public List<VectorTileFeature> Convert(GeoJsonObject data, double tolerance)
         {
-            var features = new List<GeoJsonVTFeature>();
+            var features = new List<VectorTileFeature>();
             if (data.Type == GeoJsonObject.FeatureCollectionType)
             {
                 var featureCollection = data as GeoJsonFeatureCollection;
@@ -35,14 +33,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             else
             {
                 // single geometry or a geometry collection
-                ConvertFeature(features, new GeoJsonFeature { Geometry = data as GeoJsonGeometry }, tolerance);
+                ConvertFeature(features, new GeoJsonFeature { Geometry = data as GeometryObject }, tolerance);
             }
 
             return features;
 
         }
 
-        private void ConvertFeature(List<GeoJsonVTFeature> features, GeoJsonFeature feature, double tolerance)
+        private void ConvertFeature(List<VectorTileFeature> features, GeoJsonFeature feature, double tolerance)
         {
             if (feature.Geometry == null)
                 return;
@@ -52,24 +50,24 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
             if (type == GeoJsonObject.GeoJsonPointType)
             {
-                var point = geom as GeoJsonPoint;
-                features.Add(Create(feature.Properties, 1, new[] { new GeoJsonVTPointCollection { ProjectPoint(point.Coordinates) } }));
+                var point = geom as Point;
+                features.Add(Create(feature.Properties, 1, new[] { new VectorTileGeometry { ProjectPoint(point.Coordinates) } }));
             }
             else if (type == GeoJsonObject.GeoJsonMultiPointType)
             {
-                var multiPoint = geom as GeoJsonMultipoint;
+                var multiPoint = geom as MultiPoint;
                 features.Add(Create(feature.Properties, 1, new[] { Project(multiPoint.Coordinates) }));
             }
             else if (type == GeoJsonObject.GeoJsonLineStringType)
             {
-                var linestring = geom as GeoJsonLineString;
+                var linestring = geom as LineString;
                 features.Add(Create(feature.Properties, 2, new[] { Project(linestring.Coordinates, tolerance) }));
 
             }
             else if (type == GeoJsonObject.GeoJsonMultiLineStringType || type == GeoJsonObject.GeoJsonPolygonType)
             {
-                var coords = (geom as MultiLinetringOrPolygon).Coordinates;
-                var rings = new List<GeoJsonVTPointCollection>();
+                var coords = (geom as MultiLineStringPolygonGeometry).Coordinates;
+                var rings = new List<VectorTileGeometry>();
                 for (var i = 0; i < coords.Length; i++)
                 {
                     rings.Add(Project(coords[i], tolerance));
@@ -78,8 +76,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             }
             else if (type == GeoJsonObject.GeoJsonMultiPolygonType)
             {
-                var coords = (geom as GeoJsonMultiPolygon).Coordinates;
-                var rings = new List<GeoJsonVTPointCollection>();
+                var coords = (geom as MultiPolygon).Coordinates;
+                var rings = new List<VectorTileGeometry>();
                 for (var i = 0; i < coords.Length; i++)
                 {
                     for (var j = 0; j < coords[i].Length; j++)
@@ -111,9 +109,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
 
 
-        private GeoJsonVTFeature Create(Dictionary<string, object> properties, int v, GeoJsonVTPointCollection[] geoJsonVTPointCollection)
+        private VectorTileFeature Create(Dictionary<string, object> properties, int v, VectorTileGeometry[] geoJsonVTPointCollection)
         {
-            var feature = new GeoJsonVTFeature
+            var feature = new VectorTileFeature
             {
                 Geometry = geoJsonVTPointCollection,
                 Tags = properties,
@@ -124,7 +122,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             CalcBBox(feature);
             return feature;
         }
-        private GeoJsonVTFeature CalcBBox(GeoJsonVTFeature feature)
+        private VectorTileFeature CalcBBox(VectorTileFeature feature)
         {
             var geometry = feature.Geometry;
             var min = feature.Min;
@@ -135,7 +133,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
             return feature;
         }
-        private void CalcRingBBox(double[] min, double[] max, GeoJsonVTPointCollection points)
+        private void CalcRingBBox(double[] min, double[] max, VectorTileGeometry points)
         {
             for (var i = 0; i < points.Count; i++)
             {
@@ -146,9 +144,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
                 max[1] = Math.Max(p[1], max[1]);
             }
         }
-        private GeoJsonVTPointCollection Project(double[][] lonlats, double? tolerance = null)
+        private VectorTileGeometry Project(double[][] lonlats, double? tolerance = null)
         {
-            var projected = new GeoJsonVTPointCollection();
+            var projected = new VectorTileGeometry();
             for (var i = 0; i < lonlats.Length; i++)
             {
                 projected.Add(ProjectPoint(lonlats[i]));
@@ -160,7 +158,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             }
             return projected;
         }
-        private void calcSize(GeoJsonVTPointCollection points)
+        private void calcSize(VectorTileGeometry points)
         {
             double area = 0;
             double dist = 0;

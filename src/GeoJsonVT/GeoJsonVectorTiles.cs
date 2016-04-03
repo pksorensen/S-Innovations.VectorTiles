@@ -13,153 +13,45 @@ namespace SInnovations.VectorTiles.GeoJsonVT
     public class GeoJsonVTStackItem
     {
 
-        public GeoJsonVTTileCoord Coord { get; internal set; }
-        public List<GeoJsonVTFeature> Features { get; internal set; }
+        public VectorTileCoord Coord { get; internal set; }
+        public List<VectorTileFeature> Features { get; internal set; }
     }
-    public class GeoJsonVTTile
-    {
-        public List<GeoJsonVTFeature> Features { get; set; } = new List<GeoJsonVTFeature>();
-
-        public int NumPoints { get; set; } = 0;
-        public int NumSimplified { get; set; } = 0;
-
-
-        public List<GeoJsonVTFeature> Source { get; internal set; }
-
-        public int Z2;
-        public int Y;
-        public int X;
-
-        public bool Transformed { get; set; }
-
-
-        public double[] min { get; set; } = new double[] { 2, 1 };
-        public double[] max { get; set; } = new double[] { -1, 0 };
-
-
-        public static GeoJsonVTTile CreateTile(List<GeoJsonVTFeature> features, int z2, int tx, int ty, double tolerance, bool noSimplify)
-        {
-            var tile = new GeoJsonVTTile();
-
-            tile.Z2 = z2;
-            tile.X = tx;
-            tile.Y = ty;
-            for (var i = 0; i < features.Count; i++)
-            {
-                tile.AddFeature(features[i], tolerance, noSimplify);
-
-                var min = features[i].Min;
-                var max = features[i].Max;
-
-                if (min[0] < tile.min[0]) tile.min[0] = min[0];
-                if (min[1] < tile.min[1]) tile.min[1] = min[1];
-                if (max[0] > tile.max[0]) tile.max[0] = max[0];
-                if (max[1] > tile.max[1]) tile.max[1] = max[1];
-            }
-            return tile;
-        }
-
-        private void AddFeature(GeoJsonVTFeature feature, double tolerance, bool noSimplify)
-        {
-            var geom = feature.Geometry;
-            var type = feature.Type;
-            var simplified = new List<GeoJsonVTPointCollection>();
-
-            var sqTolerance = tolerance * tolerance;
-            // i, j, ring, p;
-
-            if (type == 1)
-            {
-                var first = new GeoJsonVTPointCollection(); simplified.Add(first);
-                var points = geom[0];
-                for (var i = 0; i < points.Count; i++)
-                {
-                    first.Add(points[i]);
-                    NumPoints++;
-                    NumSimplified++;
-                }
-
-            }
-            else
-            {
-
-                // simplify and transform projected coordinates for tile geometry
-                for (var i = 0; i < geom.Length; i++)
-                {
-                    var ring = geom[i];
-
-                    // filter out tiny polylines & polygons
-                    if (!noSimplify && ((type == 2 && ring.Distance < tolerance) ||
-                                        (type == 3 && ring.Area < sqTolerance)))
-                    {
-                        NumPoints += ring.Count;
-                        continue;
-                    }
-
-                    var simplifiedRing = new GeoJsonVTPointCollection();
-
-                    for (var j = 0; j < ring.Count; j++)
-                    {
-                        var p = ring[j];
-                        // keep points with importance > tolerance
-                        if (noSimplify || p[2] > sqTolerance)
-                        {
-                            simplifiedRing.Add(p);
-                            NumSimplified++;
-                        }
-                        NumPoints++;
-                    }
-
-                    simplified.Add(simplifiedRing);
-                }
-            }
-
-            if (simplified.Count > 0)
-            {
-                Features.Add(new GeoJsonVTFeature
-                {
-                    Geometry = simplified.ToArray(),
-                    Type = type,
-                    Tags = feature.Tags
-                });
-            }
-        }
-    }
+    
     public static class Extensions
     {
-        public static bool HasAny(this List<GeoJsonVTFeature> features)
+        public static bool HasAny(this List<VectorTileFeature> features)
         {
             if (features == null)
                 return false;
             return features.Any();
         }
-        public static bool NotNull(this GeoJsonVTTile tile)
+        public static bool NotNull(this VectorTile tile)
         {
             if (tile == null)
                 return false;
             return true;
         }
-        public static bool IsNull(this GeoJsonVTTile tile)
+        public static bool IsNull(this VectorTile tile)
         {
             if (tile == null)
                 return true;
             return false;
         }
-        public static bool NoSource(this GeoJsonVTTile tile)
+        public static bool NoSource(this VectorTile tile)
         {
             return tile.IsNull() || tile.Source == null;
         }
     }
-    public class GeoJsonVT
+    public class GeoJsonVectorTiles
     {
-        protected GeoJsonVTConverter Converter { get; set; }
-        protected GeoJsonVTWrapper Wrapper { get; set; }
-        protected GeoJsonVTClipper Clipper { get; set; }
-        protected GeoJsonVTTransformer Transformer { get; set; }
+        protected VectorTileConverter Converter { get; set; }
+        protected VectorTileWrapper Wrapper { get; set; }
+        protected VectorTileClipper Clipper { get; set; }
+        protected VectorTileTransformer Transformer { get; set; }
 
-        public GeoJsonVTOptions Options { get; set; }
-        public Dictionary<string, GeoJsonVTTile> Tiles { get; set; }
-        public List<GeoJsonVTTileCoord> TileCoords { get; set; }
+        public GeoJsonVectorTilesOptions Options { get; set; }
+        public Dictionary<string, VectorTile> Tiles { get; set; }
+        public List<VectorTileCoord> TileCoords { get; set; }
 
         public static double[] IntersectX(double[] a, double[] b, double x)
         {
@@ -171,13 +63,13 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         }
 
 
-        public GeoJsonVT(GeoJsonVTOptions options = null, GeoJsonVTConverter converter = null, GeoJsonVTWrapper wrapper = null, GeoJsonVTClipper clipper = null, GeoJsonVTTransformer transformer=null)
+        public GeoJsonVectorTiles(GeoJsonVectorTilesOptions options = null, VectorTileConverter converter = null, VectorTileWrapper wrapper = null, VectorTileClipper clipper = null, VectorTileTransformer transformer=null)
         {
-            Converter = converter ?? new GeoJsonVTConverter();
-            Clipper = clipper ?? new GeoJsonVTClipper();
-            Wrapper = wrapper ?? new GeoJsonVTWrapper(Clipper);
-            Options = options ?? new GeoJsonVTOptions();
-            Transformer = transformer ?? new GeoJsonVTTransformer();
+            Converter = converter ?? new VectorTileConverter();
+            Clipper = clipper ?? new VectorTileClipper();
+            Wrapper = wrapper ?? new VectorTileWrapper(Clipper);
+            Options = options ?? new GeoJsonVectorTilesOptions();
+            Transformer = transformer ?? new VectorTileTransformer();
         }
 
       
@@ -186,17 +78,17 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             var z2 = 1 << Options.MaxZoom;//2^z
             var features = Converter.Convert(data, Options.Tolerance / (z2 * Options.Extent));
 
-            Tiles = new Dictionary<string, GeoJsonVTTile>();
-            TileCoords = new List<GeoJsonVTTileCoord>();
+            Tiles = new Dictionary<string, VectorTile>();
+            TileCoords = new List<VectorTileCoord>();
 
             features = Wrapper.Wrap(features, Options.Buffer / Options.Extent, IntersectX);
 
             // start slicing from the top tile down
-            if (features.Count > 0) SplitTile(features, new GeoJsonVTTileCoord());
+            if (features.Count > 0) SplitTile(features, new VectorTileCoord());
 
         }
 
-        public int? SplitTile(List<GeoJsonVTFeature> startfeatures, GeoJsonVTTileCoord startCoord, int? cz = null, int? cx =null, int? cy = null)
+        public int? SplitTile(List<VectorTileFeature> startfeatures, VectorTileCoord startCoord, int? cz = null, int? cx =null, int? cy = null)
         {
             var stack = new Stack<GeoJsonVTStackItem>();
             stack.Push(new GeoJsonVTStackItem { Features = startfeatures, Coord = startCoord });
@@ -214,7 +106,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
                 var z2 = 1 << z;
                 var id = ToID(z, x, y);
-                GeoJsonVTTile tile = Tiles.ContainsKey(id) ? Tiles[id] : null;
+                VectorTile tile = Tiles.ContainsKey(id) ? Tiles[id] : null;
 
                
                 
@@ -222,8 +114,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
                 {
                     var tileTolerance = z == Options.MaxZoom ? 0 : Options.Tolerance / (z2 * Options.Extent);
 
-                    tile = Tiles[id] = GeoJsonVTTile.CreateTile(features, z2, x, y, tileTolerance, z == Options.MaxZoom);
-                    TileCoords.Add(new GeoJsonVTTileCoord(z,x,y));
+                    tile = Tiles[id] = VectorTile.CreateTile(features, z2, x, y, tileTolerance, z == Options.MaxZoom);
+                    TileCoords.Add(new VectorTileCoord(z,x,y));
 
                 }
 
@@ -271,7 +163,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
                 var k2 = 0.5 - k1;
                 var k3 = 0.5 + k1;
                 var k4 = 1 + k1;
-                List<GeoJsonVTFeature> tl, bl, tr, br, left, right;
+                List<VectorTileFeature> tl, bl, tr, br, left, right;
 
                 tl = bl = tr = br = null;
 
@@ -292,20 +184,20 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
                 //   if (debug > 1) console.timeEnd('clipping');
 
-                if (tl.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = tl, Coord = new GeoJsonVTTileCoord(z + 1, x * 2,     y * 2    ) });
-                if (bl.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = bl, Coord = new GeoJsonVTTileCoord(z + 1, x * 2,     y * 2 + 1) });
-                if (tr.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = tr, Coord = new GeoJsonVTTileCoord(z + 1, x * 2 + 1, y * 2    ) });
-                if (br.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = br, Coord = new GeoJsonVTTileCoord(z + 1, x * 2 + 1, y * 2 + 1) });
+                if (tl.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = tl, Coord = new VectorTileCoord(z + 1, x * 2,     y * 2    ) });
+                if (bl.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = bl, Coord = new VectorTileCoord(z + 1, x * 2,     y * 2 + 1) });
+                if (tr.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = tr, Coord = new VectorTileCoord(z + 1, x * 2 + 1, y * 2    ) });
+                if (br.HasAny()) stack.Push(new GeoJsonVTStackItem { Features = br, Coord = new VectorTileCoord(z + 1, x * 2 + 1, y * 2 + 1) });
             }
 
             return solid;
 
         }
-        public GeoJsonVTTile GetTile(GeoJsonVTTileCoord coord)
+        public VectorTile GetTile(VectorTileCoord coord)
         {
             return GetTile(coord.Z, coord.X, coord.Y);
         }
-        public GeoJsonVTTile GetTile(int z,int x,int y)
+        public VectorTile GetTile(int z,int x,int y)
         {
             var options = this.Options;
             var extent = options.Extent;
@@ -322,7 +214,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             var z0 = z;
             var x0 = x;
             var y0 = y;
-            GeoJsonVTTile parent=null;
+            VectorTile parent=null;
 
             while (parent.IsNull() && z0 > 0)
             {
@@ -342,7 +234,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             if (IsClippedSquare(parent, extent, options.Buffer)) return Transformer.TransformTile(parent, extent);
 
            // if (debug > 1) console.time('drilling down');
-            var solid = SplitTile(parent.Source, new GeoJsonVTTileCoord(z0, x0, y0), z, x, y);
+            var solid = SplitTile(parent.Source, new VectorTileCoord(z0, x0, y0), z, x, y);
          //   if (debug > 1) console.timeEnd('drilling down');
 
             // one of the parent tiles was a solid clipped square
@@ -360,7 +252,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
 
 
-        private bool IsClippedSquare(GeoJsonVTTile tile, double extent, double buffer)
+        private bool IsClippedSquare(VectorTile tile, double extent, double buffer)
         {
             var features = tile.Source;
             if (features.Count != 1) return false;

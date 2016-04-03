@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SInnovations.VectorTiles.GeoJsonVT
 {
-    public class GeoJsonVTOptions
+    public class GeoJsonVectorTilesOptions
     {
         public int MaxZoom { get; set; } = 14;
         public int IndexMaxZoom { get; set; } = 5;

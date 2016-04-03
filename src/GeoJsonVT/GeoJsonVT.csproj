@@ -44,28 +44,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GeoJsonVT.cs" />
-    <Compile Include="GeoJsonVTFeature.cs" />
-    <Compile Include="GeoJsonVTOptions.cs" />
-    <Compile Include="GeoJsonVTPointCollection.cs" />
+    <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
+    <Compile Include="GeoJsonVectorTiles.cs" />
+    <Compile Include="Models\VectorTileFeature.cs" />
+    <Compile Include="GeoJsonVectorTilesOptions.cs" />
+    <Compile Include="Models\VectorTileGeometry.cs" />
     <Compile Include="GeoJson\GeoJsonFeature.cs" />
     <Compile Include="GeoJson\GeoJsonFeatureCollection.cs" />
     <Compile Include="GeoJson\GeoJsonObject.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonGeometry.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonLineString.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonMultiLineString.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonMultipoint.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonMultiPolygon.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonPoint.cs" />
-    <Compile Include="GeoJson\Geometries\GeoJsonPolygon.cs" />
+    <Compile Include="GeoJson\Geometries\GeometryObject.cs" />
+    <Compile Include="GeoJson\Geometries\LineString.cs" />
+    <Compile Include="GeoJson\Geometries\MultiLineString.cs" />
+    <Compile Include="GeoJson\Geometries\MultiPoint.cs" />
+    <Compile Include="GeoJson\Geometries\MultiPolygon.cs" />
+    <Compile Include="GeoJson\Geometries\Point.cs" />
+    <Compile Include="GeoJson\Geometries\Polygon.cs" />
     <Compile Include="GeoJson\Geometries\GeometryCollection.cs" />
-    <Compile Include="GeoJson\Geometries\MultiLinetringOrPolygon.cs" />
-    <Compile Include="Models\GeoJsonVTTileCoord.cs" />
-    <Compile Include="Processing\GeoJsonVTClipper.cs" />
-    <Compile Include="Processing\GeoJsonVTConverter.cs" />
-    <Compile Include="Processing\GeoJsonVTSimplifier.cs" />
-    <Compile Include="Processing\GeoJsonVTTransformer.cs" />
-    <Compile Include="Processing\GeoJsonVTWrapper.cs" />
+    <Compile Include="GeoJson\Geometries\MultiLineStringPolygonGeometry.cs" />
+    <Compile Include="Models\VectorTile.cs" />
+    <Compile Include="Models\VectorTileCoord.cs" />
+    <Compile Include="Processing\VectorTileClipper.cs" />
+    <Compile Include="Processing\VectorTileConverter.cs" />
+    <Compile Include="Processing\VectorTileSimplifier.cs" />
+    <Compile Include="Processing\VectorTileTransformer.cs" />
+    <Compile Include="Processing\VectorTileWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
