@@ -69,6 +69,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
 
             var data = Parse(Load("testjson.geojson"));
             var index = new GeoJsonVT();
+            index.Options.SolidChildren = true;
           //  index.Options.MaxZoom = maxZoom;
           //  index.Options.IndexMaxPoints = maxPoints;
             index.ProcessData(data);
@@ -79,7 +80,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
             {
                 var coord = queue.Dequeue();
                 var tile = index.GetTile(coord);
-                if (tile != null)
+                if (tile != null && coord.Z < index.Options.MaxZoom) 
                 {
                     path.Add(coord);
                     foreach (var childcoord in coord.GetChildCoordinate())
@@ -111,7 +112,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
             var json1 = JsonConvert.SerializeObject(tiles["z7-37-48"], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
             Console.WriteLine(json1);
             var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
-            File.WriteAllText("c:\\dev\\jsontest.json", json);
+          //  File.WriteAllText("c:\\dev\\jsontest.json", json);
             var expected = JObject.Parse(Load("us-states-tiles.json")).ToObject<Dictionary<string,object>>();
            
             Assert.AreEqual(expected.Keys.Count, tiles.Keys.Count);
