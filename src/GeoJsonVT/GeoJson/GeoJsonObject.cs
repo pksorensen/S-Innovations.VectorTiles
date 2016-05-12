@@ -31,7 +31,10 @@ namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject jObject = JObject.Load(reader);
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.Null)
+                return null;
+            var jObject = token as JObject;
             var type = jObject.SelectToken("type").ToString();
             GeoJsonObject value = null;
             switch (type)

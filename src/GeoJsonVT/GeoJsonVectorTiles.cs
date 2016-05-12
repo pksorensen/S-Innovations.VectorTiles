@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
+using SInnovations.VectorTiles.GeoJsonVT.Logging;
 using SInnovations.VectorTiles.GeoJsonVT.Models;
 using SInnovations.VectorTiles.GeoJsonVT.Processing;
 
@@ -44,6 +45,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
     }
     public class GeoJsonVectorTiles
     {
+        private static ILog Logger = LogProvider.GetCurrentClassLogger();
+
         protected VectorTileConverter Converter { get; set; }
         protected VectorTileWrapper Wrapper { get; set; }
         protected VectorTileClipper Clipper { get; set; }
@@ -53,11 +56,11 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         public Dictionary<string, VectorTile> Tiles { get; set; }
         public List<VectorTileCoord> TileCoords { get; set; }
 
-        public static double[] IntersectX(double[] a, double[] b, double x)
+        private static double[] IntersectX(double[] a, double[] b, double x)
         {
             return new[] { x, (x - a[0]) * (b[1] - a[1]) / (b[0] - a[0]) + a[1], 1 };
         }
-        public static double[] intersectY(double[] a, double[] b, double y)
+        private static double[] intersectY(double[] a, double[] b, double y)
         {
             return new[] { (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]) + a[0], y, 1 };
         }
@@ -75,8 +78,11 @@ namespace SInnovations.VectorTiles.GeoJsonVT
       
         public void ProcessData(GeoJsonObject data)
         {
+
+            Logger.Debug($"Preprocessing data");
             var z2 = 1 << Options.MaxZoom;//2^z
             var features = Converter.Convert(data, Options.Tolerance / (z2 * Options.Extent));
+            Logger.Debug($"Preprocessing data end");
 
             Tiles = new Dictionary<string, VectorTile>();
             TileCoords = new List<VectorTileCoord>();

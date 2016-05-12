@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
     <Compile Include="GeoJsonVectorTiles.cs" />
+    <Compile Include="Models\Converters\GeoJsonVTFeatureConverter.cs" />
     <Compile Include="Models\VectorTileFeature.cs" />
     <Compile Include="GeoJsonVectorTilesOptions.cs" />
     <Compile Include="Models\VectorTileGeometry.cs" />

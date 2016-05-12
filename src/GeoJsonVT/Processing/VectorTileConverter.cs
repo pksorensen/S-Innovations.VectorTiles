@@ -151,7 +151,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
             {
                 projected.Add(ProjectPoint(lonlats[i]));
             }
-            if (tolerance.HasValue)
+            if (tolerance.HasValue && tolerance.Value > 0)
             {
                 Simplifier.simplify(projected, tolerance.Value);
                 calcSize(projected);

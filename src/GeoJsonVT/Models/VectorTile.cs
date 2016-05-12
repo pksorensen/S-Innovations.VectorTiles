@@ -16,9 +16,11 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Models
 
         public List<VectorTileFeature> Source { get; internal set; }
 
-        public int Z2;
-        public int Y;
-        public int X;
+        public int Z2 { get; set; }
+        public int Y { get; set; }
+        public int X { get; set; }
+
+        public int Z { get { return (int)Math.Log(Z2, 2); } }
 
         public bool Transformed { get; set; }
 
@@ -26,6 +28,10 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Models
         public double[] min { get; set; } = new double[] { 2, 1 };
         public double[] max { get; set; } = new double[] { -1, 0 };
 
+
+
+        public VectorTileCoord TileCoord { get { return new VectorTileCoord(Z, X, Y); } }
+        public VectorTileCoord ParentTileCoord { get { return new VectorTileCoord(Z - 1, (int)Math.Floor(X / 2.0), (int)Math.Floor(Y / 2.0)); } }
 
         public static VectorTile CreateTile(List<VectorTileFeature> features, int z2, int tx, int ty, double tolerance, bool noSimplify)
         {
