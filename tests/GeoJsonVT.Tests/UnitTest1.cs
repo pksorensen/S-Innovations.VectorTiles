@@ -22,9 +22,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
             index.Options.IndexMaxPoints = maxPoints;
             index.ProcessData(data);
             var output = new Dictionary<string, List<VectorTileFeature>>();
-            foreach(var id in index.Tiles.Keys)
+            foreach(var id in index.Tiles.TileCoords.Select(k=>k.ToID()))
             {
-                var tile = index.Tiles[id];
+                var tile = index.Tiles.Get(id);
                 var z = (int)Math.Log(tile.Z2,2);
                 output[$"z{z}-{tile.X}-{tile.Y}"] = index.GetTile(z, tile.X, tile.Y).Features;
                 
@@ -92,6 +92,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
                     }
                 }
             });
+            index.Tiles = new FileSystemTileStore("./tmp", 5);
             index.Options.Buffer = 0;
             index.TileFaature(data.Features.First());
 

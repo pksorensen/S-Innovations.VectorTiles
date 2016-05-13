@@ -20,5 +20,18 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Models
             yield return new VectorTileCoord(Z + 1, X * 2 + 1, Y * 2);
             yield return new VectorTileCoord(Z + 1, X * 2 + 1, Y * 2 + 1);
         }
+
+
+        public string ToID()
+        {
+            return ((((1 << Z) * Y + X) * 32) + Z).ToString();
+        }
+
+        public static string ToID(int z,int x, int y)
+        {
+            return ((((1 << z) * y + x) * 32) + z).ToString();
+        }
+
+      
     }
 }

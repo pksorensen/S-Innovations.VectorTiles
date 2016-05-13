@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SInnovations.VectorTiles.GeoJsonVT;
 using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
 using SInnovations.VectorTiles.GeoJsonVT.Logging;
 using SInnovations.VectorTiles.GeoJsonVT.Models;
 using SInnovations.VectorTiles.GeoJsonVT.Processing;
+using SInnovations.VectorTiles.GeoJsonVT.Streaming;
 
 namespace GeoJsonVT.Streaming
 {
@@ -34,14 +37,64 @@ namespace GeoJsonVT.Streaming
         public Action<StreamingStackItem> OnNoSingleSplit { get; set; }
         public Action<VectorTileCoord> OnSingleSplit { get; set; }
     }
+
+    public class FileSystemTileStore : List<VectorTileCoord>,  ITileStore
+    {
+        private HashSet<string> _coords = new HashSet<string>();
+         
+        private LRUCache<string, VectorTile> _tiles;
+        public ICollection<VectorTileCoord> TileCoords { get { return this; } }
+
+        private string _path;
+        public FileSystemTileStore( string path , int inMemCapacity)
+        {
+            _path = path;
+            _tiles = new LRUCache<string, VectorTile>(new LRUCacheOptions { Capacity = inMemCapacity });
+        }
+
+         
+        public bool Contains(string id)
+        {
+            return _coords.Contains(id);
+        }
+
+        public VectorTile Get(string id)
+        {
+            var cached = _tiles.Get(id);
+            if (cached == null)
+            {
+               
+                var path = Path.Combine(_path, $"tmp{id}.json");
+                return JsonConvert.DeserializeObject<VectorTile>(File.ReadAllText(path));
+
+            }
+
+            return cached;
+        }
+
+        public VectorTile Set(string id, VectorTile value)
+        {
+            _coords.Add(value.TileCoord.ToID());
+
+            var removed = _tiles.Add(id, value);
+            if(removed != null)
+            {
+                var data = JObject.FromObject(removed);
+                var path = Path.Combine(_path, $"tmp{removed.TileCoord.ToID()}.json");
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, data.ToString());
+            }
+            return value;
+        }
+    }
     public class StreamingGeoJsonVectorTiles : GeoJsonVectorTiles<StreamingOptions>
     {
 
         public StreamingGeoJsonVectorTiles(StreamingOptions options = null) : base(options?? new StreamingOptions())
         {
 
-            Tiles = new Dictionary<string, VectorTile>();
-            TileCoords = new List<VectorTileCoord>();
+          //  Tiles = new Dictionary<string, VectorTile>();
+          //  TileCoords = new List<VectorTileCoord>();
         }
 
 
@@ -88,8 +141,8 @@ namespace GeoJsonVT.Streaming
                 var z = item.Coord.Z;
 
                 var z2 = 1 << z;
-                var id = ToID(z, x, y);
-                VectorTile tile = Tiles.ContainsKey(id) ? Tiles[id] : null;
+                var id = item.Coord.ToID();
+                VectorTile tile = Tiles.Contains(id) ? Tiles.Get(id) : null;
 
 
 
@@ -97,12 +150,12 @@ namespace GeoJsonVT.Streaming
                 {
 
 
-                    tile = Tiles[id] = tile = new VectorTile();
-                    tile.Z2 = z2;
-                    tile.X = x;
-                    tile.Y = y;
+                    tile = Tiles.Set(id,new VectorTile() { Z2 = z2, X = x, Y = y });
+                    //tile.Z2 = z2;
+                    //tile.X = x;
+                    //tile.Y = y;
 
-                    TileCoords.Add(new VectorTileCoord(z, x, y));
+                    Tiles.TileCoords.Add(new VectorTileCoord(z, x, y));
 
                 }
 

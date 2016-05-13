@@ -48,6 +48,38 @@ namespace SInnovations.VectorTiles.GeoJsonVT
     {
 
     }
+
+    public interface ITileStore { 
+        ICollection<VectorTileCoord> TileCoords { get; }
+
+        VectorTile Get(string id);
+        VectorTile Set(string id, VectorTile value);
+
+        bool Contains(string id);
+        
+    }
+
+    public class DefaultTileStore : ITileStore
+    {
+        private Dictionary<string, VectorTile> _store = new Dictionary<string, VectorTile>();
+        public ICollection<VectorTileCoord> TileCoords { get; set; } = new List<VectorTileCoord>();
+
+        public bool Contains(string id)
+        {
+            return _store.ContainsKey(id);
+        }
+
+        public VectorTile Get(string id)
+        {
+            return _store[id];
+        }
+
+        public VectorTile Set(string id, VectorTile value)
+        {
+            return _store[id] = value;
+        }
+    }
+
     public class GeoJsonVectorTiles<T> where T : GeoJsonVectorTilesOptions,new()
     {
         private static ILog Logger = LogProvider.GetCurrentClassLogger();
@@ -58,8 +90,10 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         protected VectorTileTransformer Transformer { get; set; }
 
         public T Options { get; set; }
-        public Dictionary<string, VectorTile> Tiles { get; set; }
-        public List<VectorTileCoord> TileCoords { get; set; }
+      //  public Dictionary<string, VectorTile> Tiles { get; set; }
+      //  public List<VectorTileCoord> TileCoords { get; set; }
+
+        public ITileStore Tiles { get; set; }
 
         protected static double[] IntersectX(double[] a, double[] b, double x)
         {
@@ -78,6 +112,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             Wrapper = wrapper ?? new VectorTileWrapper(Clipper);
             Options = options ?? new T();
             Transformer = transformer ?? new VectorTileTransformer();
+            Tiles = options.Tiles ?? new DefaultTileStore();
         }
 
       
@@ -89,8 +124,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             var features = Converter.Convert(data, Options.Tolerance / (z2 * Options.Extent));
             Logger.Debug($"Preprocessing data end");
 
-            Tiles = new Dictionary<string, VectorTile>();
-            TileCoords = new List<VectorTileCoord>();
+         //   Tiles = new Dictionary<string, VectorTile>();
+         //   TileCoords = new List<VectorTileCoord>();
 
             features = Wrapper.Wrap(features, Options.Buffer / Options.Extent, IntersectX);
 
@@ -116,8 +151,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
                 var z = item.Coord.Z;
 
                 var z2 = 1 << z;
-                var id = ToID(z, x, y);
-                VectorTile tile = Tiles.ContainsKey(id) ? Tiles[id] : null;
+                var id = item.Coord.ToID();
+                VectorTile tile = Tiles.Contains(id) ? Tiles.Get(id) : null;
 
                
                 
@@ -125,8 +160,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
                 {
                     var tileTolerance = z == Options.MaxZoom ? 0 : Options.Tolerance / (z2 * Options.Extent);
 
-                    tile = Tiles[id] = VectorTile.CreateTile(features, z2, x, y, tileTolerance, z == Options.MaxZoom);
-                    TileCoords.Add(new VectorTileCoord(z,x,y));
+                    tile = Tiles.Set(id, VectorTile.CreateTile(features, z2, x, y, tileTolerance, z == Options.MaxZoom));
+                    Tiles.TileCoords.Add(new VectorTileCoord(z,x,y));
 
                 }
 
@@ -220,8 +255,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             var z2 = 1 << z;
             x = ((x % z2) + z2) % z2; // wrap tile x coordinate
 
-            var id = ToID(z, x, y);
-            if (Tiles.ContainsKey(id)) return Transformer.TransformTile(Tiles[id], extent);
+            var id = VectorTileCoord.ToID(z, x, y);
+            if (Tiles.Contains(id)) return Transformer.TransformTile(Tiles.Get(id), extent);
 
             //  if (debug > 1) console.log('drilling down to z%d-%d-%d', z, x, y);
 
@@ -235,8 +270,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT
                 z0--;
                 x0 = (int)Math.Floor(x0 / 2.0);
                 y0 = (int)Math.Floor(y0 / 2.0);
-                var tileId = ToID(z0, x0, y0);
-                parent = Tiles.ContainsKey(tileId) ? Tiles[tileId] : null;
+                var tileId = VectorTileCoord.ToID(z0, x0, y0);
+                parent = Tiles.Contains(tileId) ? Tiles.Get(tileId) : null;
             }
 
             if (parent.NoSource()) return null;
@@ -255,10 +290,10 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             if (solid.HasValue)
             {
                 double m = 1 << (z - solid.Value);
-                id = ToID(solid.Value,(int) Math.Floor(x / m), (int)Math.Floor(y / m));
+                id = VectorTileCoord.ToID(solid.Value,(int) Math.Floor(x / m), (int)Math.Floor(y / m));
             }
 
-            return Tiles.ContainsKey(id) ? Transformer.TransformTile(this.Tiles[id], extent) : null;
+            return Tiles.Contains(id) ? Transformer.TransformTile(this.Tiles.Get(id), extent) : null;
         }
 
 
@@ -287,10 +322,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             return true;
         }
 
-        protected string ToID(int z, int x, int y)
-        {
-            return ((((1 << z) * y + x) * 32) + z).ToString();
-        }
+       
     }
 
 

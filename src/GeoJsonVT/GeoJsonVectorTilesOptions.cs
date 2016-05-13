@@ -16,6 +16,6 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         public double Extent { get; set; } = 4096;
         public double Buffer { get; set; } = 64;
         public int Debug { get; set; } = 0;
-
+        public ITileStore Tiles { get; set; }
     }
 }
