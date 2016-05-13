@@ -16,6 +16,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
         public VectorTileCoord Coord { get; internal set; }
         public List<VectorTileFeature> Features { get; internal set; }
+
     }
     
     public static class Extensions
@@ -43,7 +44,11 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             return tile.IsNull() || tile.Source == null;
         }
     }
-    public class GeoJsonVectorTiles
+    public class GeoJsonVectorTiles : GeoJsonVectorTiles<GeoJsonVectorTilesOptions>
+    {
+
+    }
+    public class GeoJsonVectorTiles<T> where T : GeoJsonVectorTilesOptions,new()
     {
         private static ILog Logger = LogProvider.GetCurrentClassLogger();
 
@@ -52,26 +57,26 @@ namespace SInnovations.VectorTiles.GeoJsonVT
         protected VectorTileClipper Clipper { get; set; }
         protected VectorTileTransformer Transformer { get; set; }
 
-        public GeoJsonVectorTilesOptions Options { get; set; }
+        public T Options { get; set; }
         public Dictionary<string, VectorTile> Tiles { get; set; }
         public List<VectorTileCoord> TileCoords { get; set; }
 
-        private static double[] IntersectX(double[] a, double[] b, double x)
+        protected static double[] IntersectX(double[] a, double[] b, double x)
         {
             return new[] { x, (x - a[0]) * (b[1] - a[1]) / (b[0] - a[0]) + a[1], 1 };
         }
-        private static double[] intersectY(double[] a, double[] b, double y)
+        protected static double[] intersectY(double[] a, double[] b, double y)
         {
             return new[] { (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]) + a[0], y, 1 };
         }
 
 
-        public GeoJsonVectorTiles(GeoJsonVectorTilesOptions options = null, VectorTileConverter converter = null, VectorTileWrapper wrapper = null, VectorTileClipper clipper = null, VectorTileTransformer transformer=null)
+        public GeoJsonVectorTiles(T options = null, VectorTileConverter converter = null, VectorTileWrapper wrapper = null, VectorTileClipper clipper = null, VectorTileTransformer transformer=null)
         {
             Converter = converter ?? new VectorTileConverter();
             Clipper = clipper ?? new VectorTileClipper();
             Wrapper = wrapper ?? new VectorTileWrapper(Clipper);
-            Options = options ?? new GeoJsonVectorTilesOptions();
+            Options = options ?? new T();
             Transformer = transformer ?? new VectorTileTransformer();
         }
 
@@ -93,7 +98,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             if (features.Count > 0) SplitTile(features, new VectorTileCoord());
 
         }
-
+      
         public int? SplitTile(List<VectorTileFeature> startfeatures, VectorTileCoord startCoord, int? cz = null, int? cx =null, int? cy = null)
         {
             var stack = new Stack<GeoJsonVTStackItem>();
@@ -199,6 +204,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             return solid;
 
         }
+
+        
+
         public VectorTile GetTile(VectorTileCoord coord)
         {
             return GetTile(coord.Z, coord.X, coord.Y);
@@ -256,9 +264,9 @@ namespace SInnovations.VectorTiles.GeoJsonVT
 
 
 
+    
 
-
-        private bool IsClippedSquare(VectorTile tile, double extent, double buffer)
+        protected bool IsClippedSquare(VectorTile tile, double extent, double buffer)
         {
             var features = tile.Source;
             if (features.Count != 1) return false;
@@ -279,7 +287,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             return true;
         }
 
-        string ToID(int z, int x, int y)
+        protected string ToID(int z, int x, int y)
         {
             return ((((1 << z) * y + x) * 32) + z).ToString();
         }

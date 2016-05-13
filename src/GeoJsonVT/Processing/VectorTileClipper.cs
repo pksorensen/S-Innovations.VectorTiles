@@ -15,7 +15,46 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
      */
     public class VectorTileClipper
     {
+        public VectorTileFeature Clip(VectorTileFeature feature, double scale, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, double minAll, double maxAll)
+        {
+            k1 /= scale;
+            k2 /= scale;
 
+            if (minAll >= k1 && maxAll <= k2) return feature; // trivial accept
+            else if (minAll > k2 || maxAll < k1) return null; // trivial reject
+
+            var geometry = feature.Geometry;
+            var type = feature.Type;
+
+            var min = feature.Min[axis];
+            var max = feature.Max[axis];
+
+            if (min >= k1 && max <= k2)
+            { // trivial accept
+                return feature;
+            }
+            else if (min > k2 || max < k1) return null; // trivial reject
+
+            var slices = type == 1 ?
+                    clipPoints(geometry[0], k1, k2, axis) :
+                    clipGeometry(geometry, k1, k2, axis, intersect, type == 3);
+
+            if ((slices.Length == 1) ? slices[0].Count > 0 : slices.Length > 0)
+            {
+                // if a feature got clipped, it will likely get clipped on the next zoom level as well,
+                // so there's no need to recalculate bboxes
+                return new VectorTileFeature
+                {
+                    Geometry = slices,
+                    Type = type,
+                    Tags = feature.Tags,
+                    Min = feature.Min,
+                    Max = feature.Max
+                };
+            }
+
+            return null;
+        }
         public List<VectorTileFeature> Clip(List<VectorTileFeature> features, double scale, double k1, double k2, int axis, Func<double[], double[], double, double[]> intersect, double minAll, double maxAll)
         {
             k1 /= scale;
@@ -54,7 +93,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
                     clipped.Add( new VectorTileFeature {
                         Geometry=  slices ,
                         Type= type,
-                        Tags= features[i].Tags,
+                        Tags= feature.Tags,
                         Min= feature.Min,
                         Max= feature.Max
                     });

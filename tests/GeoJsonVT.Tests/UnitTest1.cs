@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using GeoJsonVT.Streaming;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,6 +64,40 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
             }
         }
 
+        [TestMethod]
+        public void TestStreaming1()
+        {
+            var data = Parse(Load("testjson.geojson")) as GeoJsonFeatureCollection;
+            var list = new List<VectorTileCoord>();
+            var index = new Class1(new StreamingOptions
+            {
+                OnNoSingleSplit = (i) =>
+                {
+                    if(i.ParentSplitCount == 1)
+                    {
+                        list.Add(i.Coord);
+                        foreach(var point in i.Feature.Geometry.First())
+                        {
+                            Console.WriteLine(string.Join(",", point.Take(2)));
+                        }
+            
+                        foreach(var sub in i.Childs)
+                        {
+                            Console.WriteLine();
+                            foreach (var point in sub.Feature.Geometry.First())
+                            {
+                                Console.WriteLine(string.Join(",", point.Take(2)));
+                            }
+                        }
+                    }
+                }
+            });
+            index.Options.Buffer = 0;
+            index.TileFaature(data.Features.First());
+
+            index.TileFaature(data.Features.Skip(1).First());
+
+        }
         [TestMethod]
         public void TestMethod1()
         {

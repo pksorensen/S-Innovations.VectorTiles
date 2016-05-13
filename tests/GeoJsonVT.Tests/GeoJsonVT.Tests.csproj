@@ -60,6 +60,10 @@
     <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\GeoJsonVT.Streaming\GeoJsonVT.Streaming.csproj">
+      <Project>{8ae4f2ea-506d-4bdc-9e2b-6d0530c3d629}</Project>
+      <Name>GeoJsonVT.Streaming</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\GeoJsonVT\GeoJsonVT.csproj">
       <Project>{190c6ebb-bc43-4021-9d53-626149369989}</Project>
       <Name>GeoJsonVT</Name>

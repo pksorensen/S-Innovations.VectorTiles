@@ -54,7 +54,19 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Models
             }
             return tile;
         }
+        
+        public void Add(VectorTileFeature feature, double tolerance, bool noSimplify)
+        {
+            this.AddFeature(feature, tolerance, noSimplify);
 
+            var min = feature.Min;
+            var max = feature.Max;
+
+            if (min[0] < this.min[0]) this.min[0] = min[0];
+            if (min[1] < this.min[1]) this.min[1] = min[1];
+            if (max[0] > this.max[0]) this.max[0] = max[0];
+            if (max[1] > this.max[1]) this.max[1] = max[1];
+        }
         private void AddFeature(VectorTileFeature feature, double tolerance, bool noSimplify)
         {
             var geom = feature.Geometry;

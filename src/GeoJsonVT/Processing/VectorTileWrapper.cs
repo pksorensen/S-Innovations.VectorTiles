@@ -12,6 +12,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
         {
             Clipper = clipper ?? new VectorTileClipper();
         }
+
+        /// <summary>
+        /// Wrap features as per original GeoJSONVT.
+        /// </summary>
+        /// <param name="features"></param>
+        /// <param name="buffer"></param>
+        /// <param name="intersectX"></param>
+        /// <returns></returns>
         public List<VectorTileFeature> Wrap(List<VectorTileFeature> features, double buffer, Func<double[], double[], double, double[]> intersectX)
         {
             var merged = features;
@@ -31,7 +39,56 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Processing
 
 
         }
+        public IEnumerable<VectorTileFeature> Wrap(VectorTileFeature feature, double buffer, Func<double[], double[], double, double[]> intersectX)
+        {
+            //var merged = new List<VectorTileFeature> { feature };
+            var left = Clipper.Clip(feature, 1, -1 - buffer, buffer, 0, intersectX, -1, 2);//Left world copy;
+            var right = Clipper.Clip(feature, 1, 1 - buffer, 2 + buffer, 0, intersectX, -1, 2); //Right world copy;
+            var hasLeft = left != null;
+            var hasRight = right != null;
 
+            if (hasLeft || hasRight)
+            {
+                var center = Clipper.Clip(feature, 1, -buffer, 1 + buffer, 0, intersectX, -1, 2);//Center world copy;
+                if (center != null)
+                    yield return center;
+
+                if(hasLeft) yield return ShiftFeatureCoords(left, 1);
+                if (hasRight) yield return ShiftFeatureCoords(right, -1);
+               
+
+            }else
+            {
+                yield return feature;
+            }
+            
+            
+        }
+        private VectorTileFeature ShiftFeatureCoords(VectorTileFeature feature, double offset)
+        {
+            var newFeatures = new List<VectorTileFeature>();
+
+         
+                var type = feature.Type;
+
+
+                var newGeometry = new List<VectorTileGeometry>();
+                for (var j = 0; j < feature.Geometry.Length; j++)
+                {
+                    newGeometry.Add(ShiftCoords(feature.Geometry[j], offset));
+                }
+
+
+                return new VectorTileFeature
+                {
+                    Geometry = newGeometry.ToArray(),
+                    Type = type,
+                    Tags = feature.Tags,
+                    Min = new[] { feature.Min[0] + offset, feature.Min[1] },
+                    Max = new[] { feature.Max[0] + offset, feature.Max[1] }
+                };
+          
+        }
         private List<VectorTileFeature> ShiftFeatureCoords(List<VectorTileFeature> features, double offset)
         {
             var newFeatures = new List<VectorTileFeature>();
