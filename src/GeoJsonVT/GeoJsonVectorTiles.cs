@@ -112,7 +112,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT
             Wrapper = wrapper ?? new VectorTileWrapper(Clipper);
             Options = options ?? new T();
             Transformer = transformer ?? new VectorTileTransformer();
-            Tiles = options.Tiles ?? new DefaultTileStore();
+            Tiles = Options.Tiles ?? new DefaultTileStore();
         }
 
       

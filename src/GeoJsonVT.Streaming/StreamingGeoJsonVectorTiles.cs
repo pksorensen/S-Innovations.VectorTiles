@@ -40,6 +40,8 @@ namespace GeoJsonVT.Streaming
 
     public class FileSystemTileStore : List<VectorTileCoord>,  ITileStore
     {
+        private static ILog Logger = LogProvider.GetCurrentClassLogger();
+
         private HashSet<string> _coords = new HashSet<string>();
          
         private LRUCache<string, VectorTile> _tiles;
@@ -61,25 +63,29 @@ namespace GeoJsonVT.Streaming
         public VectorTile Get(string id)
         {
             var cached = _tiles.Get(id);
+           
             if (cached == null)
             {
-               
-                var path = Path.Combine(_path, $"tmp{id}.json");
+                Logger.Debug($"Cache MISS : {id}");
+                 var path = Path.Combine(_path, $"tmp{id}.json");
                 return JsonConvert.DeserializeObject<VectorTile>(File.ReadAllText(path));
 
             }
+
+            Logger.Debug($"Cache HIT : {id}");
 
             return cached;
         }
 
         public VectorTile Set(string id, VectorTile value)
         {
-            _coords.Add(value.TileCoord.ToID());
+            _coords.Add(value.TileCoord.ToID()); Logger.Debug($"Addeding {id} to cache");
 
             var removed = _tiles.Add(id, value);
             if(removed != null)
             {
                 var data = JObject.FromObject(removed);
+                Logger.Debug($"LRUCache FREE : {removed.TileCoord.ToID()}");
                 var path = Path.Combine(_path, $"tmp{removed.TileCoord.ToID()}.json");
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 File.WriteAllText(path, data.ToString());

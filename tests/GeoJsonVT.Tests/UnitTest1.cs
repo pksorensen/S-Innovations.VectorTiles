@@ -7,8 +7,10 @@ using GeoJsonVT.Streaming;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
 using SInnovations.VectorTiles.GeoJsonVT.Models;
+using SInnovations.VectorTiles.GeoJsonVT.Models.Converters;
 
 namespace SInnovations.VectorTiles.GeoJsonVT.Tests
 {
@@ -35,6 +37,14 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
     [TestClass]
     public class UnitTest1
     {
+        static UnitTest1()
+        {
+            Log.Logger = new LoggerConfiguration()
+            .WriteTo
+            .LiterateConsole(outputTemplate: "{Timestamp:HH:mm} [{Level}] ({Name:l}){NewLine} {Message}{NewLine}{Exception}")
+            .MinimumLevel.Verbose()
+            .CreateLogger();
+        }
         public static GeoJsonObject Parse(string data)
         {
             return JsonConvert.DeserializeObject<GeoJsonObject>(data, new GeoJsonObjectConverter());
@@ -99,6 +109,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
             index.TileFaature(data.Features.Skip(1).First());
 
         }
+       
         [TestMethod]
         public void TestMethod1()
         {
@@ -146,17 +157,17 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
           
 
             var tiles = GenTiles.GenerateTiles(Parse(Load("us-states.json")), 7, 200);
-            var json1 = JsonConvert.SerializeObject(tiles["z7-37-48"], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
+            var json1 = JsonConvert.SerializeObject(tiles["z7-37-48"], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } });
             Console.WriteLine(json1);
-            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
+            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } });
           //  File.WriteAllText("c:\\dev\\jsontest.json", json);
             var expected = JObject.Parse(Load("us-states-tiles.json")).ToObject<Dictionary<string,object>>();
            
             Assert.AreEqual(expected.Keys.Count, tiles.Keys.Count);
             foreach(var key in expected.Keys)
             {
-              var a = JsonConvert.SerializeObject(expected[key], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() }); 
-              var b= JsonConvert.SerializeObject(tiles[key], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() }); ;
+              var a = JsonConvert.SerializeObject(expected[key], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } }); 
+              var b= JsonConvert.SerializeObject(tiles[key], new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } }); ;
               Assert.AreEqual(CreateMD5(a), CreateMD5(b));
             }
            //    Assert.AreEqual(CreateMD5(expectedJson), CreateMD5(json));  //Test not wokring due to javascript key ordering different than dotnet
@@ -167,7 +178,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
         {
 
             var tiles = GenTiles.GenerateTiles(Parse(Load("single-geom.json")));
-            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
+            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } });
             var expected = Load("single-geom-tiles.json");
             Assert.AreEqual(CreateMD5(expected), CreateMD5(json));
 
@@ -178,7 +189,8 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
         {
 
             var tiles = GenTiles.GenerateTiles(Parse(Load("collection.json")));
-            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
+            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings {
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters= new List<JsonConverter> { new GeoJsonVTFeatureConverter() } });
             var expected = Load("collection-tiles.json");
             Assert.AreEqual(CreateMD5(expected), CreateMD5(json));
 
@@ -190,7 +202,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
         {
 
             var tiles = GenTiles.GenerateTiles(Parse(Load("dateline.json")));
-            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver() });
+            var json = JsonConvert.SerializeObject(tiles, new JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(), Converters = new List<JsonConverter> { new GeoJsonVTFeatureConverter() } });
             var expected = Load("dateline-tiles.json");
             Assert.AreEqual(CreateMD5(expected), CreateMD5(json));
 
