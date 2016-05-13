@@ -34,10 +34,10 @@ namespace GeoJsonVT.Streaming
         public Action<StreamingStackItem> OnNoSingleSplit { get; set; }
         public Action<VectorTileCoord> OnSingleSplit { get; set; }
     }
-    public class Class1 : GeoJsonVectorTiles<StreamingOptions>
+    public class StreamingGeoJsonVectorTiles : GeoJsonVectorTiles<StreamingOptions>
     {
 
-        public Class1(StreamingOptions options = null) : base(options?? new StreamingOptions())
+        public StreamingGeoJsonVectorTiles(StreamingOptions options = null) : base(options?? new StreamingOptions())
         {
 
             Tiles = new Dictionary<string, VectorTile>();

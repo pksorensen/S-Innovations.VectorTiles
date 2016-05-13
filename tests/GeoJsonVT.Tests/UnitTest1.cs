@@ -69,7 +69,7 @@ namespace SInnovations.VectorTiles.GeoJsonVT.Tests
         {
             var data = Parse(Load("testjson.geojson")) as GeoJsonFeatureCollection;
             var list = new List<VectorTileCoord>();
-            var index = new Class1(new StreamingOptions
+            var index = new StreamingGeoJsonVectorTiles(new StreamingOptions
             {
                 OnNoSingleSplit = (i) =>
                 {
