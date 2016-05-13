@@ -7,8 +7,8 @@
     <ProjectGuid>{8AE4F2EA-506D-4BDC-9E2B-6D0530C3D629}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GeoJsonVT.Streaming</RootNamespace>
-    <AssemblyName>GeoJsonVT.Streaming</AssemblyName>
+    <RootNamespace>SInnovations.VectorTiles.GeoJsonVT.Streaming</RootNamespace>
+    <AssemblyName>S-Innovations.VectorTiles.GeoJsonVT.Streaming</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

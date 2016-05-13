@@ -36,4 +36,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly:InternalsVisibleTo("GeoJsonVT.Streaming")]
+[assembly:InternalsVisibleTo("S-Innovations.VectorTiles.GeoJsonVT.Streaming")]
