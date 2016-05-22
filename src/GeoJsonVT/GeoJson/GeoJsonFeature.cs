@@ -8,5 +8,6 @@ namespace SInnovations.VectorTiles.GeoJsonVT.GeoJson
         public override string Type { get; } = FeatureType;
         public GeometryObject Geometry { get; set; }
         public Dictionary<string, object> Properties { get; set; }
+
     }
 }
